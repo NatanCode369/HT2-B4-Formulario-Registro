@@ -2,16 +2,21 @@ package org.library.system.utils;
 
 /**
  * Clase utilitaria para validaciones de datos en el sistema bibliotecario.
- * Todas las validaciones retornan boolean e imprimen mensajes de error por consola.
+ * Todas las validaciones retornan boolean. Los mensajes al usuario
+ * son manejados por AlertUtils desde los controladores.
  */
 public class Validations {
-    private static Validations instancevalidations;
+
+    private static Validations instance;
+
+    private Validations() {
+    }
 
     public static Validations getInstancevalidations() {
-        if (instancevalidations == null) {
-            instancevalidations = new Validations();
+        if (instance == null) {
+            instance = new Validations();
         }
-        return  instancevalidations;
+        return instance;
     }
 
     /**
@@ -37,6 +42,7 @@ public class Validations {
         return cleanIsbn.matches(isbnRegexNumbers) || !cleanIsbn.matches(isbnRegexLetters) ;
     }
 
+
     /**
      * Valida que un número sea positivo.
      */
@@ -44,43 +50,37 @@ public class Validations {
         return value > 0;
     }
 
+    public boolean validatePasswordMatch(String password, String confirmPassword) {
+        if (password == null || confirmPassword == null) return false;
+        return password.equals(confirmPassword);
+    }
+
     /**
      * Valida la fortaleza de una contraseña.
+     * Requisitos: minLength caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 especial.
      */
     public boolean validatePasswordStrength(String password, int minLength) {
-        if (password == null || password.isEmpty()) {
-            //Contraseña vacía
-            return false;
-        }
-        if (password.length() < minLength) {
-            //Longitud no cumple con el mínimo
-            return false;
-        }
+        if (password == null || password.isEmpty()) return false;
+        if (password.length() < minLength) return false;
+
         boolean hasUpper = !password.equals(password.toLowerCase());
         boolean hasLower = !password.equals(password.toUpperCase());
         boolean hasDigit = password.matches(".*\\d.*");
         boolean hasSpecial = password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
 
-        //Debe contener al menos 1 letra mayús
-        return !hasUpper && !hasLower && !hasDigit && !hasSpecial;
+        return hasUpper && hasLower && hasDigit && hasSpecial;
     }
 
     /**
      * Valida que un año sea válido (1900 - actual).
      */
     public boolean validateYear(String year) {
-        if (year == null || year.isEmpty()) {
-            return false;
-        }
+        if (year == null || year.isEmpty()) return false;
         try {
             int yearInt = Integer.parseInt(year);
             int currentYear = java.time.Year.now().getValue();
-            boolean result;
-            result = yearInt >= 1900 && yearInt <= currentYear;
-            //El año debe estar en el rango de 1900 y el año actual
-            return result;
+            return yearInt >= 1900 && yearInt <= currentYear;
         } catch (NumberFormatException e) {
-            //Año fuera del rango
             return false;
         }
     }

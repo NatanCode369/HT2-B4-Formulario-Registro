@@ -7,7 +7,8 @@ import javafx.scene.control.TextField;
 import org.library.system.dao.UserDao;
 import org.library.system.enums.Role;
 import org.library.system.model.User;
-import org.library.system.service.EmailRoleResolver;
+import org.library.system.utils.AlertUtils;
+import org.library.system.utils.AppStatus;
 import org.library.system.utils.PasswordUtil;
 import org.library.system.utils.SceneManager;
 import org.library.system.utils.Validations;
@@ -24,7 +25,7 @@ public class RegisterController {
     @FXML private Button btnCancel;
 
     private final UserDao userDao = new UserDao();
-    private final Validations validations = new Validations();
+    private final Validations validations = Validations.getInstancevalidations();
 
     @FXML
     public void initialize() {
@@ -33,49 +34,89 @@ public class RegisterController {
 
     @FXML
     private void handleRegister() {
-        String fullName = txtName.getText();
-        String email = txtEmail.getText();
-        String password = txtPassword.getText();
-        String confirm = txtConfirmPassword.getText();
+        if (txtName.getText().isEmpty()
+                || txtEmail.getText().isEmpty()
+                || txtPassword.getText().isEmpty()
+                || txtConfirmPassword.getText().isEmpty()) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Campos obligatorios vacíos");
+            return;
+        }
 
-        if (validations.isEmpty(fullName)) return;
-        if (validations.isEmpty(email)) return;
-        if (validations.isEmpty(password)) return;
-        if (validations.isEmpty(confirm)) return;
-        if (!validations.validatePasswordMatch(password, confirm)) return;
-        if (!validations.validateEmail(email)) return;
+        if (!validations.validatePasswordMatch(txtPassword.getText(), txtConfirmPassword.getText())) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Las contraseñas no coinciden, asegúrese de que ambas contraseñas coinciden.");
+            return;
+        }
 
-        Role role = EmailRoleResolver.resolve(email);
-        if (role == null) return;
+        if (!validations.validatePasswordStrength(txtConfirmPassword.getText(), 8)) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    """
+                            La contraseña no cumple los requisitos mínimos:
+                            - 8 caracteres mínimo.
+                            - Al menos 1 letra mayúscula y 1 minúscula.
+                            - Al menos 1 caracter especial.
+                            - Al menos 1 número.
+                            """);
+            return;
+        }
+
+        if (!validations.validateEmail(txtEmail.getText().trim())) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Formato no válido para el email.");
+            return;
+        }
+
+        String email = txtEmail.getText().trim().toLowerCase();
+
+        // Solo se permiten correos con prefijo std. (estudiantes)
+        if (!email.startsWith("std.")) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Solo se pueden registrar estudiantes.\n" +
+                            "El correo debe iniciar con 'std.'");
+            return;
+        }
 
         try {
-            String[] parts = fullName.trim().split(" ", 2);
+            String[] parts = txtName.getText().trim().split(" ", 2);
             String firstName = parts[0];
             String lastName = parts.length > 1 ? parts[1] : "";
 
             String emailWithoutPrefix = email.substring(email.indexOf('.') + 1);
             String userCode = emailWithoutPrefix.split("@")[0].toUpperCase();
 
-            if (userDao.findByCode(userCode).isPresent()) return;
-            if (userDao.findByEmail(email.trim()).isPresent()) return;
+            if (userDao.findByCode(userCode).isPresent()) {
+                AlertUtils.instanceAlert().show(AppStatus.CONFLICT,
+                        "El código de usuario ya existe: " + userCode);
+                return;
+            }
+            if (userDao.findByEmail(email).isPresent()) {
+                AlertUtils.instanceAlert().show(AppStatus.CONFLICT,
+                        "El correo ya está registrado: " + email);
+                return;
+            }
 
             User user = new User();
             user.setUser_code(userCode);
             user.setFirst_name(firstName);
             user.setLast_name(lastName);
-            user.setEmail(email.trim().toLowerCase());
-            user.setPassword_hash(PasswordUtil.hash(password));
-            user.setUser_role(role);
+            user.setEmail(email);
+            user.setPassword_hash(PasswordUtil.hash(txtPassword.getText()));
+            user.setUser_role(Role.STUDENT);  // ← forzado a STUDENT
             user.setActive(true);
 
             userDao.create(user);
+
+            AlertUtils.instanceAlert().show(AppStatus.CREATED,
+                    "Estudiante registrado correctamente. Redirigiendo al login...");
 
             SceneManager.getInstanciaSceneManager().goTo(
                     "/org/library/system/view/LoginView.fxml"
             );
 
         } catch (SQLException e) {
-            System.err.println("Error al registrar: " + e.getMessage());
+            AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
+                    "Error al registrar: " + e.getMessage());
         }
     }
 

@@ -18,16 +18,13 @@ public class SessionManager {
     public boolean login(User user, String passwordInput) {
         if (user != null && user.getActive() && user.getPassword_hash().equals(passwordInput)) {
             this.currentUser = user;
-            System.out.println("[SESSION] Login successful. Welcome, " + user.getFirst_name() + " (" + user.getUser_role() + ").");
             return true;
         }
-        System.out.println("[ERROR] Invalid credentials or inactive user.");
         return false;
     }
 
     public void logout() {
         if (currentUser != null) {
-            System.out.println("[SESSION] Logout successful for user: " + currentUser.getUser_code());
             this.currentUser = null;
         }
     }
