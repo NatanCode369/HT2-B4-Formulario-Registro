@@ -3,6 +3,8 @@ package org.library.system;
 import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import org.library.system.utils.AlertUtils;
+import org.library.system.utils.AppStatus;
 import org.library.system.utils.SceneManager;
 
 public class Main extends Application {
@@ -17,15 +19,13 @@ public class Main extends Application {
                     "/org/library/system/resources/images/library-book.png"
             );
 
-            if (iconUrl == null) {
-                System.err.println(">>> ICONO NO ENCONTRADO");
-            } else {
+            if (iconUrl != null) {
                 Image icon = new Image(iconUrl.toExternalForm());
                 stage.getIcons().add(icon);
-                System.out.println(">>> ICONO APLICADO");
             }
         } catch (Exception e) {
-            System.err.println(">>> ERROR al cargar icono: " + e.getMessage());
+            AlertUtils.instanceAlert().show(AppStatus.UNEXPECTED_ERROR,
+                    "Problemas al cargar algunos recursos visuales, continué con normalidad la ejecución del programa.");
         }
 
         // Cargar la vista inicial (Login)
