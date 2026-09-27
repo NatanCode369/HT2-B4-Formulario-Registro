@@ -32,7 +32,7 @@ public class LibrarianController {
     @FXML private TextField txtLastName;
     @FXML private TextField txtEmail;
     @FXML private TextField txtPassword;
-    @FXML private ComboBox<Role> cmbRole;
+    @FXML private ComboBox<Role> cmbRole = new ComboBox<>();
     @FXML private CheckBox chkActive;
 
     @FXML private TableView<User> tableLibrarians;
@@ -131,6 +131,12 @@ public class LibrarianController {
         if (!validations.validateEmail(txtEmail.getText().trim())) {
             AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
                     "Formato no válido para el email.");
+            return;
+        }
+
+        if (cmbRole.getSelectionModel().getSelectedItem() == null) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Seleccione el rol del usuario.");
             return;
         }
 
