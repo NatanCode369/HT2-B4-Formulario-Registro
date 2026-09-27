@@ -16,7 +16,6 @@ public enum AppStatus {
     FORBIDDEN(403, Severity.ERROR, "Acceso denegado", "No tiene permisos para esta operación."),
     NOT_FOUND(404, Severity.WARNING, "No encontrado", "No existe el recurso solicitado."),
     CONFLICT(409, Severity.WARNING, "Conflicto de datos", "El registro ya existe o no puede modificarse."),
-    UNPROCESSABLE(422, Severity.WARNING, "Regla de negocio", "La operación no cumple las reglas del sistema."),
 
     DATABASE_UNAVAILABLE(503, Severity.ERROR, "Conflictos en la base de datos",
             "No fue posible conectarse con la base de datos."),
