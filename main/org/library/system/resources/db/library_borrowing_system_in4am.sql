@@ -1171,3 +1171,8 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+#- Se ejecuta con el script completo
+#- Esta llamada agrega a un gerente por defecto
+#- Contraseña: AAbb11$$
+call library_borrowing_system_in4am.sp_user_create('BTJ010203', 'Gerente', 'Biblioteca', 'btj.manager@gmail.com', '84e5ef430ab5b0f83c1944083e99eb8cb9d1df645592aceeed0c68141c311f18', 'MANAGER');
