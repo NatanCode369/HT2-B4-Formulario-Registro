@@ -1,7 +1,7 @@
 package org.library.system.dao;
 
 import org.library.system.config.ConectionDB;
-import org.library.system.enums.Role;
+import org.library.system.model.enums.Role;
 import org.library.system.model.User;
 
 import java.sql.*;

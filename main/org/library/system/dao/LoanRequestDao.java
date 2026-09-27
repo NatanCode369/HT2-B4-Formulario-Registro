@@ -1,7 +1,7 @@
 package org.library.system.dao;
 
 import org.library.system.config.ConectionDB;
-import org.library.system.enums.RequestStatus;
+import org.library.system.model.enums.RequestStatus;
 import org.library.system.model.LoanApplication;
 
 import java.sql.*;

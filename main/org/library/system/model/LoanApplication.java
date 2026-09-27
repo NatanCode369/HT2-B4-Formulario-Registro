@@ -38,4 +38,5 @@ public class LoanApplication {
     public void setLibrarian_id(Integer librarian_id) { this.librarian_id = librarian_id; }
     public LocalDate getResponse_date() { return response_date; }
     public void setResponse_date(LocalDate response_date) { this.response_date = response_date; }
+
 }

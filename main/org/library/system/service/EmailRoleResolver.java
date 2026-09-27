@@ -1,6 +1,6 @@
 package org.library.system.service;
 
-import org.library.system.enums.Role;
+import org.library.system.model.enums.Role;
 
 /**
  * Resuelve el rol del usuario segun el prefijo de su correo electronico.

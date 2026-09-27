@@ -5,7 +5,8 @@ import java.security.NoSuchAlgorithmException;
 
 public class PasswordUtil {
 
-    private PasswordUtil() {}
+    private PasswordUtil() {
+    }
 
     public static String hash(String password) {
         try {
@@ -22,3 +23,8 @@ public class PasswordUtil {
             throw new RuntimeException("Error al hashear contrasena", e);
         }
     }
+
+    public static boolean verify(String password, String passwordHash) {
+        return hash(password).equals(passwordHash);
+    }
+}

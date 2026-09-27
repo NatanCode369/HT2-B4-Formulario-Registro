@@ -3,7 +3,7 @@ package org.library.system.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import org.library.system.enums.Role;
+import org.library.system.model.enums.Role;
 import org.library.system.model.User;
 import org.library.system.utils.SceneManager;
 import org.library.system.utils.SessionManager;

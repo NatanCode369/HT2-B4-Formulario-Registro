@@ -13,7 +13,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import org.library.system.dao.UserDao;
-import org.library.system.enums.Role;
+import org.library.system.model.enums.Role;
 import org.library.system.model.User;
 import org.library.system.utils.AlertUtils;
 import org.library.system.utils.AppStatus;

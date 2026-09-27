@@ -14,8 +14,8 @@ import org.library.system.dao.LoanDetailDao;
 import org.library.system.dao.LoanRequestDao;
 import org.library.system.dao.LoanRequestDetailDao;
 import org.library.system.dao.UserDao;
-import org.library.system.enums.LoanStatus;
-import org.library.system.enums.RequestStatus;
+import org.library.system.model.enums.LoanStatus;
+import org.library.system.model.enums.RequestStatus;
 import org.library.system.model.Book;
 import org.library.system.model.Loan;
 import org.library.system.model.LoanApplication;
@@ -53,6 +53,10 @@ public class PendingRequestsController {
     private final UserDao userDao = new UserDao();
 
     private final ObservableList<LoanApplication> requestList = FXCollections.observableArrayList();
+
+    private static boolean test(LoanApplication r) {
+        return r.getStatus() != RequestStatus.PENDING;
+    }
 
     @FXML
     public void initialize() {
@@ -95,7 +99,7 @@ public class PendingRequestsController {
     private void loadPendingRequests() {
         try {
             List<LoanApplication> all = loanRequestDao.search("PENDING");
-            all.removeIf(r -> r.getStatus() != RequestStatus.PENDING);
+            all.removeIf(PendingRequestsController::test);
             requestList.setAll(all);
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
