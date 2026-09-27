@@ -6,10 +6,17 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import org.library.system.dao.UserDao;
 import org.library.system.enums.Role;
 import org.library.system.model.User;
+import org.library.system.utils.AlertUtils;
+import org.library.system.utils.AppStatus;
 import org.library.system.utils.PasswordUtil;
 import org.library.system.utils.SceneManager;
 import org.library.system.utils.Validations;
@@ -25,6 +32,7 @@ public class LibrarianController {
     @FXML private TextField txtLastName;
     @FXML private TextField txtEmail;
     @FXML private TextField txtPassword;
+    @FXML private ComboBox<Role> cmbRole = new ComboBox<>();
     @FXML private CheckBox chkActive;
 
     @FXML private TableView<User> tableLibrarians;
@@ -39,11 +47,18 @@ public class LibrarianController {
     @FXML private Button btnBack;
 
     private final UserDao userDao = new UserDao();
-    private final Validations validations = new Validations();
+    private final Validations validations = Validations.getInstancevalidations();
     private final ObservableList<User> librarianList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
+        // Cargar opciones del ComboBox (solo bibliotecarios y jefes)
+        cmbRole.setItems(FXCollections.observableArrayList(
+                Role.LIBRARIAN,
+                Role.MANAGER
+        ));
+        cmbRole.getSelectionModel().selectFirst();
+
         configureTable();
         tableLibrarians.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldVal, newVal) -> {
@@ -67,10 +82,12 @@ public class LibrarianController {
     private void loadLibrarians() {
         try {
             List<User> users = userDao.search("");
-            users.removeIf(u -> u.getUser_role() != Role.LIBRARIAN);
+            // Mostrar solo bibliotecarios y jefes (no estudiantes)
+            users.removeIf(u -> u.getUser_role() == Role.STUDENT);
             librarianList.setAll(users);
         } catch (SQLException e) {
-            System.err.println("Error al cargar bibliotecarios: " + e.getMessage());
+            AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
+                    "Error al cargar bibliotecarios. Intente nuevamente. ");
         }
     }
 
@@ -79,10 +96,16 @@ public class LibrarianController {
         String filter = txtSearch.getText();
         try {
             List<User> results = userDao.search(filter == null ? "" : filter.trim());
-            results.removeIf(u -> u.getUser_role() != Role.LIBRARIAN);
+            results.removeIf(u -> u.getUser_role() == Role.STUDENT);
             librarianList.setAll(results);
+
+            if (results.isEmpty()) {
+                AlertUtils.instanceAlert().show(AppStatus.NOT_FOUND,
+                        "No se encontraron bibliotecarios con los criterios establecidos.");
+            }
         } catch (SQLException e) {
-            System.err.println("Error al buscar: " + e.getMessage());
+            AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
+                    "Error al realizar la búsqueda.");
         }
     }
 
@@ -94,14 +117,43 @@ public class LibrarianController {
 
     @FXML
     private void handleAdd() {
-        if (!validateFields(true)) return;
+        if (txtUserCode.getText().isEmpty()
+                || txtFirstName.getText().isEmpty()
+                || txtLastName.getText().isEmpty()
+                || txtEmail.getText().isEmpty()
+                || txtPassword.getText().isEmpty()
+                || cmbRole.getValue() == null) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Complete todos los campos obligatorios.");
+            return;
+        }
+
+        if (!validations.validateEmail(txtEmail.getText().trim())) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Formato no válido para el email.");
+            return;
+        }
+
+        if (cmbRole.getSelectionModel().getSelectedItem() == null) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Seleccione el rol del usuario.");
+            return;
+        }
 
         try {
             String userCode = txtUserCode.getText().trim();
             String email = txtEmail.getText().trim().toLowerCase();
 
-            if (userDao.findByCode(userCode).isPresent()) return;
-            if (userDao.findByEmail(email).isPresent()) return;
+            if (userDao.findByCode(userCode).isPresent()) {
+                AlertUtils.instanceAlert().show(AppStatus.CONFLICT,
+                        "El código ya existe: " + userCode);
+                return;
+            }
+            if (userDao.findByEmail(email).isPresent()) {
+                AlertUtils.instanceAlert().show(AppStatus.CONFLICT,
+                        "El correo ya existe: " + email);
+                return;
+            }
 
             User user = new User();
             user.setUser_code(userCode);
@@ -109,54 +161,93 @@ public class LibrarianController {
             user.setLast_name(txtLastName.getText().trim());
             user.setEmail(email);
             user.setPassword_hash(PasswordUtil.hash(txtPassword.getText()));
-            user.setUser_role(Role.LIBRARIAN);
+            user.setUser_role(cmbRole.getValue());   // ← rol del ComboBox
             user.setActive(chkActive.isSelected());
 
             userDao.create(user);
+
+            AlertUtils.instanceAlert().show(AppStatus.CREATED,
+                    "Bibliotecario registrado correctamente.");
+
             loadLibrarians();
             clearFields();
 
         } catch (SQLException e) {
-            System.err.println("Error al crear bibliotecario: " + e.getMessage());
+            AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
+                    "Error al crear bibliotecario: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleUpdate() {
         User selected = tableLibrarians.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-        if (!validateFields(false)) return;
+        if (selected == null) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Seleccione un bibliotecario de la tabla.");
+            return;
+        }
+
+        if (txtUserCode.getText().isEmpty()
+                || txtFirstName.getText().isEmpty()
+                || txtLastName.getText().isEmpty()
+                || txtEmail.getText().isEmpty()
+                || cmbRole.getValue() == null) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Complete todos los campos obligatorios.");
+            return;
+        }
+
+        if (!validations.validateEmail(txtEmail.getText().trim())) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Formato no válido para el email.");
+            return;
+        }
 
         try {
             selected.setUser_code(txtUserCode.getText().trim());
             selected.setFirst_name(txtFirstName.getText().trim());
             selected.setLast_name(txtLastName.getText().trim());
             selected.setEmail(txtEmail.getText().trim().toLowerCase());
+            selected.setUser_role(cmbRole.getValue());   // ← rol del ComboBox
             if (!txtPassword.getText().isBlank()) {
                 selected.setPassword_hash(PasswordUtil.hash(txtPassword.getText()));
             }
             selected.setActive(chkActive.isSelected());
-
             userDao.update(selected);
+
+            AlertUtils.instanceAlert().show(AppStatus.OK,
+                    "Bibliotecario actualizado correctamente.");
+
             loadLibrarians();
             clearFields();
 
         } catch (SQLException e) {
-            System.err.println("Error al actualizar: " + e.getMessage());
+            AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
+                    "Error al actualizar: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleDelete() {
         User selected = tableLibrarians.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
+        if (selected == null) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Seleccione un bibliotecario de la tabla.");
+            return;
+        }
 
         try {
             userDao.delete(selected.getUser_id());
+
+            AlertUtils.instanceAlert().show(AppStatus.DELETED,
+                    "Bibliotecario eliminado correctamente.");
+
             loadLibrarians();
             clearFields();
+
         } catch (SQLException e) {
-            System.err.println("Error al eliminar: " + e.getMessage());
+            AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
+                    "Error al intentar eliminar. Pruebe nuevamente. ");
         }
     }
 
@@ -178,6 +269,7 @@ public class LibrarianController {
         txtLastName.setText(user.getLast_name());
         txtEmail.setText(user.getEmail());
         txtPassword.clear();
+        cmbRole.setValue(user.getUser_role());   // ← cargar rol
         chkActive.setSelected(user.getActive());
     }
 
@@ -187,16 +279,8 @@ public class LibrarianController {
         txtLastName.clear();
         txtEmail.clear();
         txtPassword.clear();
+        cmbRole.getSelectionModel().selectFirst();
         chkActive.setSelected(true);
         tableLibrarians.getSelectionModel().clearSelection();
-    }
-
-    private boolean validateFields(boolean requirePassword) {
-        if (validations.isEmpty(txtUserCode.getText())) return false;
-        if (validations.isEmpty(txtFirstName.getText())) return false;
-        if (validations.isEmpty(txtLastName.getText())) return false;
-        if (validations.isEmpty(txtEmail.getText())) return false;
-        if (requirePassword && validations.isEmpty(txtPassword.getText())) return false;
-        return true;
     }
 }
