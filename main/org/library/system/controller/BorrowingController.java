@@ -126,9 +126,18 @@ public class BorrowingController {
 
     @FXML
     private void handleSearchBook() {
-        String filter = "";
-        if (!txtIsbn.getText().isEmpty()) filter = txtIsbn.getText().trim();
-        else if (!txtBookTitle.getText().isEmpty()) filter = txtBookTitle.getText().trim();
+        // Validar que al menos un campo de búsqueda tenga contenido
+        // Evita búsquedas vacías que cargarían todo el catálogo innecesariamente
+        String isbnFilter = txtIsbn.getText().trim();
+        String titleFilter = txtBookTitle.getText().trim();
+
+        if (isbnFilter.isEmpty() && titleFilter.isEmpty()) {
+            AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
+                    "Ingrese al menos un criterio de búsqueda (ISBN o título).");
+            return;
+        }
+
+        String filter = isbnFilter.isEmpty() ? titleFilter : isbnFilter;
 
         try {
             List<Book> results = bookDao.search(filter);
@@ -210,7 +219,7 @@ public class BorrowingController {
                             + "Libro: " + selectedBook.getTitle() + "\n"
                             + "Fecha límite: " + dpDueDate.getValue());
 
-            bookList.setAll(bookDao.search(""));
+            // Solo limpiar el formulario, no recargar toda la lista
             clearForm();
 
         } catch (SQLException e) {
