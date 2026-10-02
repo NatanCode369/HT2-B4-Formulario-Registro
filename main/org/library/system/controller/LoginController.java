@@ -1,8 +1,6 @@
 package org.library.system.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import org.library.system.dao.UserDao;
@@ -21,8 +19,6 @@ public class LoginController {
 
     @FXML private TextField txtEmail;
     @FXML private PasswordField txtPassword;
-    @FXML private Button btnLogin;
-    @FXML private Hyperlink hlRegister;
 
     private final UserDao userDao = new UserDao();
     private final Validations validations = Validations.getInstancevalidations();
@@ -77,7 +73,8 @@ public class LoginController {
 
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
-                    "Error de base de datos: " + e.getMessage());
+                    "Error de base de datos. Pruebe enviar otra solicitud.");
+            System.out.println(e.getMessage());
         }
     }
 

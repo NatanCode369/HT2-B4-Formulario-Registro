@@ -34,6 +34,7 @@ public class SceneManager {
             getPrimaryStage().sizeToScene();
             getPrimaryStage().show();
         } catch (Exception e) {
+            AlertUtils.instanceAlert().show(AppStatus.UNEXPECTED_ERROR, null);
             System.out.println(e.getMessage());
         }
     }
@@ -46,8 +47,8 @@ public class SceneManager {
             Scene scene = new Scene(loader.load());
             changeScene(scene);
         } catch (IOException e) {
-            System.err.println("Error al navegar a: " + fxmlPath);
-            e.printStackTrace();
+            AlertUtils.instanceAlert().show(AppStatus.UNEXPECTED_ERROR, null);
+            System.out.println(e.getMessage());
         }
     }
 }

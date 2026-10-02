@@ -18,7 +18,6 @@ public class DashboardController {
     @FXML private Button btnManageLibrarians;
     @FXML private Button btnConsultCatalog;
     @FXML private Button btnMyBorrowings;
-    @FXML private Button btnLogout;
 
     @FXML
     public void initialize() {

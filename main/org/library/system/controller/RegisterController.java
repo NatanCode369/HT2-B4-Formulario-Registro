@@ -1,7 +1,6 @@
 package org.library.system.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import org.library.system.dao.UserDao;
@@ -21,8 +20,6 @@ public class RegisterController {
     @FXML private TextField txtEmail;
     @FXML private PasswordField txtPassword;
     @FXML private PasswordField txtConfirmPassword;
-    @FXML private Button btnRegister;
-    @FXML private Button btnCancel;
 
     private final UserDao userDao = new UserDao();
     private final Validations validations = Validations.getInstancevalidations();
@@ -116,7 +113,8 @@ public class RegisterController {
 
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
-                    "Error al registrar: " + e.getMessage());
+                    "Error al realizar el registro. Pruebe otra vez.");
+            System.out.println(e.getMessage());
         }
     }
 

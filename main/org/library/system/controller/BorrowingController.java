@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -51,11 +50,6 @@ public class BorrowingController {
     @FXML private TableColumn<Book, String> colTitle;
     @FXML private TableColumn<Book, String> colAuthor;
     @FXML private TableColumn<Book, Integer> colAvailable;
-    @FXML private Button btnSearchStudent;
-    @FXML private Button btnSearchBook;
-    @FXML private Button btnGenerateBorrowing;
-    @FXML private Button btnPrintReceipt;
-    @FXML private Button btnBack;
 
     private final UserDao userDao = new UserDao();
     private final BookDao bookDao = new BookDao();

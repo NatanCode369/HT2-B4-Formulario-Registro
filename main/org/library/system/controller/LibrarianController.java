@@ -88,6 +88,7 @@ public class LibrarianController {
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
                     "Error al cargar bibliotecarios. Intente nuevamente. ");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -106,6 +107,7 @@ public class LibrarianController {
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
                     "Error al realizar la búsqueda.");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -174,7 +176,8 @@ public class LibrarianController {
 
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
-                    "Error al crear bibliotecario: " + e.getMessage());
+                    "Error al crear bibliotecario. Realize una nueva solicitud");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -191,6 +194,7 @@ public class LibrarianController {
                 || txtFirstName.getText().isEmpty()
                 || txtLastName.getText().isEmpty()
                 || txtEmail.getText().isEmpty()
+                || txtPassword.getText().isEmpty()
                 || cmbRole.getValue() == null) {
             AlertUtils.instanceAlert().show(AppStatus.INVALID_INPUT,
                     "Complete todos los campos obligatorios.");
@@ -223,7 +227,8 @@ public class LibrarianController {
 
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
-                    "Error al actualizar: " + e.getMessage());
+                    "Error al actualizar los datos.");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -248,6 +253,7 @@ public class LibrarianController {
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
                     "Error al intentar eliminar. Pruebe nuevamente. ");
+            System.out.println(e.getMessage());
         }
     }
 

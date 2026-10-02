@@ -30,7 +30,7 @@ import java.util.List;
 
 public class CatalogController {
 
-    private static boolean editMode = true;
+    private static boolean isLibrarianMode = true;
 
     @FXML private TextField txtSearchTitle;
     @FXML private TextField txtSearchIsbn;
@@ -52,14 +52,8 @@ public class CatalogController {
     @FXML private TableColumn<Book, Integer> colYear;
     @FXML private TableColumn<Book, Integer> colTotalStock;
     @FXML private TableColumn<Book, Integer> colAvailableStock;
-
-    @FXML private Button btnAdd;
-    @FXML private Button btnUpdate;
-    @FXML private Button btnDelete;
-    @FXML private Button btnClear;
     @FXML private Button btnNewBorrowing;
     @FXML private Button btnRequestBorrowing;
-    @FXML private Button btnBack;
 
     private final BookDao bookDao = new BookDao();
     private final LoanRequestDao loanRequestDao = new LoanRequestDao();
@@ -70,7 +64,7 @@ public class CatalogController {
     private Book selectedBook;
 
     public static void setEditMode(boolean editable) {
-        editMode = editable;
+        isLibrarianMode = editable;
     }
 
     @FXML
@@ -80,11 +74,11 @@ public class CatalogController {
 
         Role role = user.getUser_role();
 
-        boolean canEdit = (role == Role.LIBRARIAN || role == Role.MANAGER);
-        editSection.setVisible(canEdit);
-        editSection.setManaged(canEdit);
-        btnNewBorrowing.setVisible(canEdit);
-        btnNewBorrowing.setManaged(canEdit);
+        isLibrarianMode = (role == Role.LIBRARIAN || role == Role.MANAGER);
+        editSection.setVisible(isLibrarianMode);
+        editSection.setManaged(isLibrarianMode);
+        btnNewBorrowing.setVisible(isLibrarianMode);
+        btnNewBorrowing.setManaged(isLibrarianMode);
 
         boolean isStudent = (role == Role.STUDENT);
         btnRequestBorrowing.setVisible(isStudent);
@@ -121,7 +115,8 @@ public class CatalogController {
             bookList.setAll(books);
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
-                    "Error al cargar libros: " + e.getMessage());
+                    "Error al cargar libros, intente nuevamente.");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -153,7 +148,8 @@ public class CatalogController {
             }
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
-                    "Error al buscar: " + e.getMessage());
+                    "Error al buscar el libro solicitado, intente de nuevo.");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -166,7 +162,7 @@ public class CatalogController {
 
     @FXML
     private void handleAddBook() {
-        if (!editMode) {
+        if (!isLibrarianMode) {
             AlertUtils.instanceAlert().show(AppStatus.FORBIDDEN,
                     "No tiene permiso para añadir libros.");
             return;
@@ -210,17 +206,21 @@ public class CatalogController {
 
         try {
             Book book = getBook();
-            bookDao.create(book);
+            book.setIsbn(txtIsbn.getText());
+
+            Integer bookId = bookDao.create(book);
+            book.setBook_id(bookId);
+            bookList.add(book);
 
             AlertUtils.instanceAlert().show(AppStatus.CREATED,
                     "El libro se registró correctamente.");
 
-            loadBooks();
             clearFields();
 
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
                     "Error al intentar crear el libro.");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -275,6 +275,8 @@ public class CatalogController {
             selectedBook.setTotal_stock(Integer.parseInt(txtCopies.getText()));
 
             bookDao.update(selectedBook);
+            int index = bookList.indexOf(selectedBook);
+            bookList.set(index, selectedBook);
 
             AlertUtils.instanceAlert().show(AppStatus.OK,
                     "El libro se actualizó correctamente.");
@@ -285,6 +287,7 @@ public class CatalogController {
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
                     "Error al actualizar el libro seleccionado.");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -298,16 +301,19 @@ public class CatalogController {
 
         try {
             bookDao.delete(selectedBook.getBook_id());
+            bookList.remove(selectedBook);
+            tableBooks.getSelectionModel().clearSelection();
+            selectedBook = null;
 
             AlertUtils.instanceAlert().show(AppStatus.DELETED,
                     "El libro se eliminó correctamente.");
 
-            loadBooks();
             clearFields();
 
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
                     "Error al eliminar el libro seleccionado.");
+            System.out.println(e.getMessage());
         }
     }
 
@@ -359,6 +365,7 @@ public class CatalogController {
         } catch (SQLException e) {
             AlertUtils.instanceAlert().show(AppStatus.DATABASE_UNAVAILABLE,
                     "Error al solicitar el préstamo. Pruebe nuevamente.");
+            System.out.println(e.getMessage());
         }
     }
 

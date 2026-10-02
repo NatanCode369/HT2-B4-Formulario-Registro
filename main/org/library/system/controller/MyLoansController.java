@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import org.library.system.dao.BookDao;
@@ -31,8 +30,6 @@ public class MyLoansController {
     @FXML private TableColumn<Loan, String> colLoanDate;
     @FXML private TableColumn<Loan, String> colDueDate;
     @FXML private TableColumn<Loan, String> colStatus;
-
-    @FXML private Button btnBack;
 
     private final LoanDao loanDao = new LoanDao();
     private final LoanDetailDao loanDetailDao = new LoanDetailDao();

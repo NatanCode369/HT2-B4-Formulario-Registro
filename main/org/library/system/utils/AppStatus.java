@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 public enum AppStatus {
     OK(200, Severity.INFO, "Operación completada", "La operación se realizó con éxito."),
     CREATED(201, Severity.INFO, "Creado", "Creación exitosa."),
-    DELETED(204, Severity.INFO, "Creado", "Eliminación exitosa."),
+    DELETED(204, Severity.INFO, "Eliminado", "Eliminación exitosa."),
 
     INVALID_INPUT(400, Severity.WARNING, "Datos inválidos", "Revise los campos obligatorios."),
     UNAUTHORIZED(401, Severity.ERROR, "Sesión no válida", "Debe iniciar sesión."),
